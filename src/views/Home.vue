@@ -4,8 +4,8 @@
       <v-card rounded="xl" class="pa-6">
         <div class="text-h5 font-weight-bold">StudyBuddy Offline</div>
         <div class="text-body-1 mt-2">
-          Import PDF or notes, auto-generate flashcards + quizzes, and study with spaced repetition —
-          <b>all on your device</b>.
+          Import PDF or notes, auto-generate flashcards + quizzes, and study with spaced repetition.
+          <b>All on your Device</b>.
         </div>
 
         <v-alert class="mt-4" type="info" variant="tonal" rounded="lg">
