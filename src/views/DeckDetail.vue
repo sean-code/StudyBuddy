@@ -170,6 +170,39 @@
 
 
 
+    <v-card rounded="xl" class="pa-4 mt-4">
+      <div class="d-flex align-center justify-space-between">
+        <div>
+          <div class="text-subtitle-1 font-weight-bold">Quiz</div>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ quizCount }} question(s) saved
+          </div>
+        </div>
+
+        <div class="d-flex ga-2 flex-wrap">
+          <v-btn color="primary" :loading="generatingQuiz" :disabled="generatingQuiz || cardsStore.cards.length === 0"
+            prepend-icon="mdi-help-circle-outline" @click="buildQuiz">
+            Generate
+          </v-btn>
+
+          <v-btn variant="tonal" prepend-icon="mdi-play-circle" :disabled="quizCount === 0"
+            @click="$router.push(`/quiz/${id}`)">
+            Take Quiz
+          </v-btn>
+
+          <v-btn variant="outlined" prepend-icon="mdi-delete" :disabled="quizCount === 0" @click="clearQuiz">
+            Clear
+          </v-btn>
+        </div>
+      </div>
+
+      <v-alert class="mt-3" type="info" variant="tonal" rounded="lg">
+        Quiz is generated from your cloze cards (fill-in-the-blank + MCQs).
+      </v-alert>
+    </v-card>
+
+
+
     <v-card v-if="showPreview" rounded="xl" class="pa-4" variant="tonal">
       <div class="text-subtitle-1 font-weight-bold">Preview</div>
       <div class="text-body-2 text-medium-emphasis">
@@ -193,6 +226,9 @@ import { useContentStore } from "../stores/content";
 import { useCardsStore } from "../stores/cards";
 import { generateFlashcards } from "../lib/flashcards";
 
+import { useQuizzesStore } from "../stores/quizzes";
+import { generateQuiz } from "../stores/quiz";
+
 
 export default {
   props: ["id"],
@@ -208,6 +244,10 @@ export default {
       cardsStore: useCardsStore(),
       generatingCards: false,
       cardPreviewOpen: false,
+
+      quizzesStore: useQuizzesStore(),
+      generatingQuiz: false,
+
 
 
       busy: false,
@@ -239,6 +279,11 @@ export default {
     cardsCount() {
       return this.cardsStore.cards.length;
     },
+    quizCount() {
+      return this.quizzesStore.questions.length;
+    },
+
+
   },
 
   async mounted() {
@@ -251,6 +296,8 @@ export default {
 
     await this.contentStore.loadChunks(this.id);
     await this.cardsStore.loadCards(this.id);
+    await this.quizzesStore.load(this.id);
+
 
   },
 
@@ -338,6 +385,35 @@ export default {
         this.generatingCards = false;
       }
     },
+
+    async buildQuiz() {
+  this.generatingQuiz = true;
+  try {
+    // Ensure cards loaded
+    await this.cardsStore.loadCards(this.id);
+
+    if (!this.cardsStore.cards.length) {
+      this.notify("Generate flashcards first.", "error");
+      return;
+    }
+
+    const questions = generateQuiz(this.cardsStore.cards, { maxQuestions: 20 });
+    await this.quizzesStore.replace(this.id, questions);
+
+    this.notify(`Generated ${questions.length} quiz questions.`);
+  } catch (e) {
+    console.error(e);
+    this.notify("Failed to generate quiz.", "error");
+  } finally {
+    this.generatingQuiz = false;
+  }
+},
+
+async clearQuiz() {
+  await this.quizzesStore.clear(this.id);
+  this.notify("Quiz cleared.", "info");
+},
+
 
   },
 };
