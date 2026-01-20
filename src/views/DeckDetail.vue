@@ -34,24 +34,12 @@
           <v-window v-model="tab" class="mt-3">
             <!-- PDF -->
             <v-window-item value="pdf">
-              <v-file-input
-                label="Select PDF"
-                accept="application/pdf"
-                prepend-icon="mdi-paperclip"
-                variant="outlined"
-                rounded="lg"
-                v-model="pdfFile"
-                :disabled="busy"
-              />
+              <v-file-input label="Select PDF" accept="application/pdf" prepend-icon="mdi-paperclip" variant="outlined"
+                rounded="lg" v-model="pdfFile" :disabled="busy" />
 
               <div class="d-flex ga-2 mt-2">
-                <v-btn
-                  color="primary"
-                  :loading="busy"
-                  :disabled="!pdfFile || busy"
-                  prepend-icon="mdi-file-import"
-                  @click="handlePdfImport"
-                >
+                <v-btn color="primary" :loading="busy" :disabled="!pdfFile || busy" prepend-icon="mdi-file-import"
+                  @click="handlePdfImport">
                   Extract & Save
                 </v-btn>
 
@@ -60,13 +48,7 @@
                 </v-btn>
               </div>
 
-              <v-progress-linear
-                v-if="busy"
-                class="mt-3"
-                :model-value="progressPct"
-                height="8"
-                rounded
-              />
+              <v-progress-linear v-if="busy" class="mt-3" :model-value="progressPct" height="8" rounded />
               <div v-if="busy" class="text-caption mt-1 text-medium-emphasis">
                 Extracting page {{ progress.page }} / {{ progress.total }}
               </div>
@@ -74,23 +56,11 @@
 
             <!-- TEXT -->
             <v-window-item value="text">
-              <v-textarea
-                label="Paste notes"
-                variant="outlined"
-                rounded="lg"
-                rows="10"
-                v-model="rawText"
-                :disabled="busy"
-                placeholder="Paste your notes here…"
-              />
+              <v-textarea label="Paste notes" variant="outlined" rounded="lg" rows="10" v-model="rawText"
+                :disabled="busy" placeholder="Paste your notes here…" />
               <div class="d-flex ga-2 mt-2">
-                <v-btn
-                  color="primary"
-                  :loading="busy"
-                  :disabled="!rawText.trim() || busy"
-                  prepend-icon="mdi-content-save"
-                  @click="handleTextImport"
-                >
+                <v-btn color="primary" :loading="busy" :disabled="!rawText.trim() || busy"
+                  prepend-icon="mdi-content-save" @click="handleTextImport">
                   Chunk & Save
                 </v-btn>
 
@@ -120,21 +90,12 @@
 
           <v-divider class="my-3" />
 
-          <v-text-field
-            v-model="filter"
-            label="Filter chunks"
-            variant="outlined"
-            rounded="lg"
-            density="compact"
-            prepend-inner-icon="mdi-magnify"
-          />
+          <v-text-field v-model="filter" label="Filter chunks" variant="outlined" rounded="lg" density="compact"
+            prepend-inner-icon="mdi-magnify" />
 
           <div class="mt-3" style="max-height: 360px; overflow:auto;">
             <v-expansion-panels variant="accordion">
-              <v-expansion-panel
-                v-for="c in filteredChunks"
-                :key="c.id"
-              >
+              <v-expansion-panel v-for="c in filteredChunks" :key="c.id">
                 <v-expansion-panel-title>
                   <div class="d-flex align-center justify-space-between w-100">
                     <div class="text-body-2 font-weight-medium">
@@ -157,6 +118,58 @@
 
     <v-divider class="my-4" />
 
+
+    <v-card rounded="xl" class="pa-4 mt-4">
+      <div class="d-flex align-center justify-space-between">
+        <div>
+          <div class="text-subtitle-1 font-weight-bold">Flashcards</div>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ cardsCount }} card(s) saved
+          </div>
+        </div>
+
+        <div class="d-flex ga-2">
+          <v-btn color="primary" :loading="generatingCards"
+            :disabled="generatingCards || contentStore.chunks.length === 0" prepend-icon="mdi-auto-fix"
+            @click="generateCards">
+            Generate
+          </v-btn>
+
+          <v-btn variant="outlined" prepend-icon="mdi-eye" :disabled="cardsCount === 0"
+            @click="cardPreviewOpen = !cardPreviewOpen">
+            Preview
+          </v-btn>
+
+          <v-btn variant="tonal" prepend-icon="mdi-book-open" :disabled="cardsCount === 0"
+            @click="$router.push(`/study/${id}`)">
+            Study
+          </v-btn>
+        </div>
+      </div>
+
+      <v-expand-transition>
+        <div v-if="cardPreviewOpen" class="mt-3">
+          <v-divider class="mb-3" />
+          <v-alert type="info" variant="tonal" rounded="lg">
+            Showing the first 6 cards.
+          </v-alert>
+
+          <v-row class="mt-2">
+            <v-col cols="12" md="6" v-for="c in cardsStore.cards.slice(0, 6)" :key="c.id">
+              <v-card rounded="xl" class="pa-4" variant="tonal">
+                <div class="text-caption text-medium-emphasis">{{ c.type.toUpperCase() }}</div>
+                <div class="text-body-1 font-weight-medium mt-1">{{ c.front }}</div>
+                <v-divider class="my-2" />
+                <div class="text-body-2">{{ c.back }}</div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+      </v-expand-transition>
+    </v-card>
+
+
+
     <v-card v-if="showPreview" rounded="xl" class="pa-4" variant="tonal">
       <div class="text-subtitle-1 font-weight-bold">Preview</div>
       <div class="text-body-2 text-medium-emphasis">
@@ -177,6 +190,9 @@ import { db } from "../db";
 import { extractTextFromPdf } from "../lib/pdfExtract";
 import { chunkText } from "../lib/chunking";
 import { useContentStore } from "../stores/content";
+import { useCardsStore } from "../stores/cards";
+import { generateFlashcards } from "../lib/flashcards";
+
 
 export default {
   props: ["id"],
@@ -188,6 +204,11 @@ export default {
       rawText: "",
       previewText: "",
       showPreview: false,
+
+      cardsStore: useCardsStore(),
+      generatingCards: false,
+      cardPreviewOpen: false,
+
 
       busy: false,
       progress: { page: 0, total: 0 },
@@ -214,6 +235,10 @@ export default {
         return h.includes(q) || t.includes(q);
       });
     },
+
+    cardsCount() {
+      return this.cardsStore.cards.length;
+    },
   },
 
   async mounted() {
@@ -225,6 +250,8 @@ export default {
     }
 
     await this.contentStore.loadChunks(this.id);
+    await this.cardsStore.loadCards(this.id);
+
   },
 
   methods: {
@@ -288,6 +315,30 @@ export default {
       await this.contentStore.clearDeckContent(this.id);
       this.notify("Deck content cleared.", "info");
     },
+
+    async generateCards() {
+      this.generatingCards = true;
+      try {
+        // Ensure chunks loaded
+        const chunks = this.contentStore.chunks || [];
+        if (!chunks.length) {
+          this.notify("No chunks found. Import notes first.", "error");
+          return;
+        }
+
+        const generated = generateFlashcards(chunks, { maxCards: 45 });
+        await this.cardsStore.replaceDeckCards(this.id, generated);
+        this.cardPreviewOpen = true;
+
+        this.notify(`Generated ${generated.length} flashcards.`);
+      } catch (e) {
+        console.error(e);
+        this.notify("Failed to generate flashcards.", "error");
+      } finally {
+        this.generatingCards = false;
+      }
+    },
+
   },
 };
 </script>
