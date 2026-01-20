@@ -1,12 +1,7 @@
 <template>
   <v-app>
     <!-- NAV DRAWER -->
-    <v-navigation-drawer
-      v-model="drawer"
-      app
-      width="308"
-      class="sb-drawer"
-    >
+    <v-navigation-drawer v-model="drawer" app width="308" class="sb-drawer">
       <!-- Brand -->
       <div class="pa-4">
         <v-card rounded="xl" class="pa-4 brand" elevation="0">
@@ -18,7 +13,7 @@
 
               <div>
                 <div class="text-subtitle-1 font-weight-bold">StudyBuddy</div>
-                <div class="text-caption text-medium-emphasis">Offline • Private</div>
+                <div class="text-caption text-medium-emphasis">Secure, Private</div>
               </div>
             </div>
 
@@ -44,12 +39,8 @@
               </v-card>
             </v-col>
             <v-col cols="4">
-              <v-card
-                rounded="lg"
-                class="pa-3"
-                :variant="stats.due > 0 ? 'flat' : 'tonal'"
-                :color="stats.due > 0 ? 'primary' : undefined"
-              >
+              <v-card rounded="lg" class="pa-3" :variant="stats.due > 0 ? 'flat' : 'tonal'"
+                :color="stats.due > 0 ? 'primary' : undefined">
                 <div class="text-caption" :class="stats.due > 0 ? 'text-white' : 'text-medium-emphasis'">
                   Due
                 </div>
@@ -62,34 +53,16 @@
 
           <!-- Quick actions -->
           <div class="d-flex ga-2 mt-3 flex-wrap">
-            <v-btn
-              size="small"
-              color="primary"
-              rounded="lg"
-              prepend-icon="mdi-plus"
-              @click="openCreate = true"
-            >
+            <v-btn size="small" color="primary" rounded="lg" prepend-icon="mdi-plus" @click="openCreate = true">
               New Deck
             </v-btn>
 
-            <v-btn
-              size="small"
-              variant="tonal"
-              rounded="lg"
-              prepend-icon="mdi-play-circle"
-              :disabled="!resumeDeckId"
-              @click="resumeStudy"
-            >
+            <v-btn size="small" variant="tonal" rounded="lg" prepend-icon="mdi-play-circle" :disabled="!resumeDeckId"
+              @click="resumeStudy">
               Resume
             </v-btn>
 
-            <v-btn
-              size="small"
-              variant="text"
-              rounded="lg"
-              prepend-icon="mdi-refresh"
-              @click="refreshStats"
-            >
+            <v-btn size="small" variant="text" rounded="lg" prepend-icon="mdi-refresh" @click="refreshStats">
               Refresh
             </v-btn>
           </div>
@@ -100,46 +73,20 @@
       <v-list density="compact" nav class="px-2">
         <v-list-subheader class="text-caption text-medium-emphasis">Navigation</v-list-subheader>
 
-        <v-list-item
-          to="/"
-          title="Home"
-          prepend-icon="mdi-home-outline"
-          rounded="lg"
-        />
-        <v-list-item
-          to="/decks"
-          title="Decks"
-          prepend-icon="mdi-cards-outline"
-          rounded="lg"
-        />
-        <v-list-item
-          to="/analytics"
-          title="Analytics"
-          prepend-icon="mdi-chart-line"
-          rounded="lg"
-        />
+        <v-list-item to="/" title="Home" prepend-icon="mdi-home-outline" rounded="lg" />
+        <v-list-item to="/decks" title="Decks" prepend-icon="mdi-cards-outline" rounded="lg" />
+        <v-list-item to="/analytics" title="Analytics" prepend-icon="mdi-chart-line" rounded="lg" />
 
         <v-divider class="my-3" />
 
         <v-list-subheader class="text-caption text-medium-emphasis">Shortcuts</v-list-subheader>
 
-        <v-list-item
-          :to="resumeDeckId ? `/study/${resumeDeckId}` : '/decks'"
-          title="Study Due"
-          subtitle="Spaced repetition queue"
-          prepend-icon="mdi-book-open-variant"
-          rounded="lg"
-          :disabled="!resumeDeckId"
-        />
+        <v-list-item :to="resumeDeckId ? `/study/${resumeDeckId}` : '/decks'" title="Study Due"
+          subtitle="Spaced repetition queue" prepend-icon="mdi-book-open-variant" rounded="lg"
+          :disabled="!resumeDeckId" />
 
-        <v-list-item
-          :to="resumeDeckId ? `/quiz/${resumeDeckId}` : '/decks'"
-          title="Quick Quiz"
-          subtitle="MCQ + fill blanks"
-          prepend-icon="mdi-help-circle-outline"
-          rounded="lg"
-          :disabled="!resumeDeckId"
-        />
+        <v-list-item :to="resumeDeckId ? `/quiz/${resumeDeckId}` : '/decks'" title="Quick Quiz"
+          subtitle="MCQ + fill blanks" prepend-icon="mdi-help-circle-outline" rounded="lg" :disabled="!resumeDeckId" />
       </v-list>
 
       <!-- Footer -->
@@ -153,14 +100,8 @@
               <v-icon icon="mdi-database" class="text-medium-emphasis" />
             </div>
 
-            <v-btn
-              class="mt-3"
-              block
-              rounded="lg"
-              variant="outlined"
-              prepend-icon="mdi-cog-outline"
-              @click="openAbout = true"
-            >
+            <v-btn class="mt-3" block rounded="lg" variant="outlined" prepend-icon="mdi-cog-outline"
+              @click="openAbout = true">
               About
             </v-btn>
           </v-card>
@@ -178,9 +119,16 @@
 
       <v-spacer />
 
-      <v-chip size="small" variant="tonal" prepend-icon="mdi-shield-check">
-        Offline
+      <v-chip class="mr-5" size="small" variant="tonal" :prepend-icon="greetingIcon">
+        {{ greetingText }}
       </v-chip>
+
+      <v-chip class="mr-2" size="small" variant="tonal" :prepend-icon="onlineIcon"
+        :color="isOnline ? 'success' : 'warning'">
+        {{ onlineText }}
+      </v-chip>
+
+
     </v-app-bar>
 
     <!-- MAIN -->
@@ -195,22 +143,11 @@
       <v-card rounded="xl" class="pa-4">
         <div class="text-h6 font-weight-bold">Create Deck</div>
 
-        <v-text-field
-          class="mt-4"
-          label="Deck title"
-          v-model="form.title"
-          placeholder="e.g., CSC 722 - Midterm Notes"
-          variant="outlined"
-          rounded="lg"
-        />
+        <v-text-field class="mt-4" label="Deck title" v-model="form.title" placeholder="e.g., CSC 722 - Midterm Notes"
+          variant="outlined" rounded="lg" />
 
-        <v-select
-          label="Source type"
-          v-model="form.sourceType"
-          :items="['pdf', 'text']"
-          variant="outlined"
-          rounded="lg"
-        />
+        <v-select label="Source type" v-model="form.sourceType" :items="['pdf', 'text']" variant="outlined"
+          rounded="lg" />
 
         <div class="d-flex justify-end ga-2 mt-4">
           <v-btn variant="text" @click="openCreate = false">Cancel</v-btn>
@@ -264,6 +201,11 @@ export default {
       form: { title: "", sourceType: "pdf" },
 
       openAbout: false,
+
+      greetingTimer: null,
+      isOnline: navigator.onLine,
+
+
     };
   },
 
@@ -272,7 +214,59 @@ export default {
     await this.decksStore.seedIfEmpty();
     await this.decksStore.loadDecks();
     await this.refreshStats();
+
+    this.greetingTimer = setInterval(() => {
+      // force re-compute each minute
+      this.$forceUpdate();
+    }, 60 * 1000);
+
+
+    this._onOnline = () => { this.isOnline = true; };
+    this._onOffline = () => { this.isOnline = false; };
+
+    window.addEventListener("online", this._onOnline);
+    window.addEventListener("offline", this._onOffline);
+
+
   },
+
+
+
+  beforeUnmount() {
+    if (this.greetingTimer) clearInterval(this.greetingTimer);
+
+    window.removeEventListener("online", this._onOnline);
+    window.removeEventListener("offline", this._onOffline);
+  },
+
+  computed: {
+    greetingText() {
+      const h = new Date().getHours();
+
+      if (h >= 5 && h < 12) return "Good Morning";
+      if (h >= 12 && h < 17) return "Good Afternoon";
+      if (h >= 17 && h < 22) return "Good Evening";
+      return "Good Night";
+    },
+
+    greetingIcon() {
+      const h = new Date().getHours();
+
+      if (h >= 5 && h < 12) return "mdi-weather-sunny";
+      if (h >= 12 && h < 17) return "mdi-white-balance-sunny";
+      if (h >= 17 && h < 22) return "mdi-weather-sunset";
+      return "mdi-weather-night";
+    },
+
+    onlineText() {
+      return this.isOnline ? "Online" : "Offline";
+    },
+    onlineIcon() {
+      return this.isOnline ? "mdi-wifi" : "mdi-wifi-off";
+    },
+
+  },
+
 
   methods: {
     async refreshStats() {
@@ -325,19 +319,19 @@ export default {
 
 .brand {
   background:
-    radial-gradient(600px 250px at 20% 0%, rgba(25,118,210,0.22), transparent 60%),
-    radial-gradient(450px 280px at 100% 10%, rgba(156,39,176,0.16), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.10);
+    radial-gradient(600px 250px at 20% 0%, rgba(25, 118, 210, 0.22), transparent 60%),
+    radial-gradient(450px 280px at 100% 10%, rgba(156, 39, 176, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 .brand-avatar {
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .footer {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>
