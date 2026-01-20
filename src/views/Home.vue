@@ -19,8 +19,8 @@
             </div>
 
             <div class="text-body-1 mt-3 text-medium-emphasis">
-              Turn PDFs and notes into flashcards and quizzes, then study with spaced repetition —
-              <span class="font-weight-bold">right in your browser</span>.
+              Turn PDFs and notes into flashcards and quizzes, then study with spaced repetition, 
+              <span class="font-weight-bold">Right in your Browser</span>.
             </div>
 
             <div class="mt-5 d-flex ga-3 flex-wrap">
@@ -226,6 +226,10 @@ export default {
     await this.decksStore.seedIfEmpty();
     await this.decksStore.loadDecks();
     await this.refreshStats();
+
+    // Start Drawer auto-collapsed / closed on mobile screens
+    this.drawer = window.innerWidth >= 960;
+
   },
 
   methods: {
